@@ -2,11 +2,12 @@ package com.example.jobrecommendation.entity;
 
 import java.util.List;
 
-import jakarta.persistence.ElementCollection;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -14,13 +15,16 @@ import jakarta.persistence.Table;
 public class Job {
 
     @Id
+
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
 
     private String title;
 
-    @ElementCollection
-    private List<String> requiredSkills;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+
+    private List<JobSkill> requiredSkills;
 
     private double minYearsExperience;
 
@@ -43,7 +47,7 @@ public class Job {
         return title;
     }
 
-    public List<String> getRequiredSkills() {
+    public List<JobSkill> getRequiredSkills() {
         return requiredSkills;
     }
 
@@ -75,7 +79,7 @@ public class Job {
         this.title = title;
     }
 
-    public void setRequiredSkills(List<String> requiredSkills) {
+    public void setRequiredSkills(List<JobSkill> requiredSkills) {
         this.requiredSkills = requiredSkills;
     }
 
