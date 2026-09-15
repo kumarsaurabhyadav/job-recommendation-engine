@@ -16,6 +16,29 @@ public class ScoringService {
 
     private static final double SKILL_WEIGHT = 50.0;
 
+    public boolean isEligible(Candidate candidate, Job job) {
+
+    Set<String> candidateSkills = new HashSet<>();
+
+    for (String skill : candidate.getSkills()) {
+        candidateSkills.add(normalize(skill));
+    }
+
+    for (JobSkill jobSkill : job.getRequiredSkills()) {
+
+        if (jobSkill.getType() == SkillType.MUST_HAVE) {
+
+            String requiredSkill = normalize(jobSkill.getSkill());
+
+            if (!candidateSkills.contains(requiredSkill)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
     public double calculateSkillScore(Candidate candidate, Job job) {
 
         Set<String> candidateSkills = new HashSet<>();
@@ -113,6 +136,52 @@ public class ScoringService {
 
     // Location mismatch and remote is not allowed.
     return 0.0;
+}
+
+public double calculateSalaryScore(Candidate candidate, Job job) {
+
+    double expectedSalary = candidate.getExpectedSalary();
+    double salaryMin = job.getSalaryMin();
+    double salaryMax = job.getSalaryMax();
+
+    // Invalid salary range.
+    if (salaryMin < 0 || salaryMax < salaryMin) {
+        return 0.0;
+    }
+
+    // Job cannot meet the candidate's expected salary.
+    if (salaryMax < expectedSalary) {
+        return 0.0;
+    }
+
+    // Candidate's expectation is within the job's salary range.
+    if (expectedSalary >= salaryMin && expectedSalary <= salaryMax) {
+        return 15.0;
+    }
+
+    /*
+     * Candidate expects less than the minimum salary.
+     * The job still fits the candidate's expectation,
+     * so give full score.
+     */
+    if (expectedSalary < salaryMin) {
+        return 15.0;
+    }
+
+    return 0.0;
+}
+
+public double calculateTotalScore(Candidate candidate, Job job) {
+
+    double skillScore = calculateSkillScore(candidate, job);
+    double experienceScore = calculateExperienceScore(candidate, job);
+    double locationScore = calculateLocationScore(candidate, job);
+    double salaryScore = calculateSalaryScore(candidate, job);
+
+    return skillScore
+            + experienceScore
+            + locationScore
+            + salaryScore;
 }
 
     private String normalize(String skill) {
